@@ -1,0 +1,41 @@
+name: "CODEOWNERs Superpowers!"
+description: "A simple way to turn your CODEOWNERs into superpowers!"
+author: "Enderson Menezes <mail@enderson.dev>"
+
+branding:
+  icon: "command"
+  color: "gray-dark"
+
+inputs:
+  require_all_codeowners_at_line:
+    description: "Use that power to verify if all CODEOWNERs of that file approve the changes"
+    required: false
+    default: "false"
+  pr_number:
+    description: "The PR number"
+    required: true
+  repository:
+    description: "The repository name"
+    required: true
+  owner:
+    description: "The repository owner"
+    required: true
+  gh-token:
+    description: "The GitHub (Read the documentation to see how to create one)"
+    required: true
+
+# outputs:
+#   is-ok:
+#     description: "The action is OK?"
+#     value: ${{ steps.boost-codeowners.outputs.is-ok }}
+
+runs:
+  using: "composite"
+  steps:
+
+    - shell: bash
+      name: "Boost CODEOWNERs"
+      id: boost-codeowners
+      run: main.sh 
+      env:
+        GITHUB_TOKEN: ${{ inputs.gh-token }}
