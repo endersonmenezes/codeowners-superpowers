@@ -37,8 +37,8 @@ echo "Analyzing PR: $PR_URL"
 
 ## Checkout Repo and PR
 echo "Trying to clone $OWNER/$REPOSITORY"
-#gh repo clone "$OWNER/$REPOSITORY"
-#cd $REPOSITORY
+gh repo clone "$OWNER/$REPOSITORY"
+cd $REPOSITORY
 gh pr checkout $PR_URL
 
 gh pr diff --name-only $NUMBER > changed_files.txt
