@@ -15,7 +15,7 @@ PR_URL="https://github.com/$OWNER/$REPOSITORY/pull/$PR_NUMBER"
 echo "Analyzing PR: $PR_URL"
 
 ## Get Changed Files
-gh pr diff --name-only $PR_NUMBER > changed_files.txt
+gh pr diff --name-only $PR_URL > changed_files.txt
 echo 
 echo "Changed Files:"
 cat changed_files.txt
@@ -80,7 +80,7 @@ for OWNER in "${NECESSARY_APPROVALS[@]}"; do
     echo $OWNER
 done
 
-PR_APPROVED=$(gh pr view $PR_NUMBER --json reviews | jq '.reviews[] | select(.state == "APPROVED") | .author.login')
+PR_APPROVED=$(gh pr view $PR_URL --json reviews | jq '.reviews[] | select(.state == "APPROVED") | .author.login')
 PR_APPROVED=$(echo $PR_APPROVED | tr -d '"')
 
 echo 
