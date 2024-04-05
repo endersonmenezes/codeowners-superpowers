@@ -15,6 +15,8 @@ PR_URL="https://github.com/$OWNER/$REPOSITORY/pull/$PR_NUMBER"
 echo "Analyzing PR: $PR_URL"
 
 ## Checkout Repo and PR
+gh clone $OWNER/$REPOSITORY
+cd $REPOSITORY
 gh pr checkout $PR_URL
 ls
 
