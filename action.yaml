@@ -14,11 +14,8 @@ inputs:
   pr_number:
     description: "The PR number"
     required: true
-  repository:
+  owner_and_repository:
     description: "The repository name"
-    required: true
-  owner:
-    description: "The repository owner"
     required: true
   gh-token:
     description: "The GitHub (Read the documentation to see how to create one)"
@@ -43,6 +40,6 @@ runs:
       name: "Boost CODEOWNERs"
       id: boost-codeowners
       if: ${{ inputs.require_all_codeowners_at_line == 'true' }}
-      run: main.sh ${{ inputs.owner }} ${{ inputs.repository }} ${{ inputs.pr_number }}
+      run: main.sh ${{ inputs.owner_and_repository }} ${{ inputs.pr_number }}
       env:
         GITHUB_TOKEN: ${{ inputs.gh-token }}

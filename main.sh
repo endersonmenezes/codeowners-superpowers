@@ -6,14 +6,30 @@
 ##
 
 # Arguments
-OWNER=$1
-REPOSITORY=$2
-PR_NUMBER=$3
+OWNER_AND_REPOSITORY=$1
+PR_NUMBER=$2
+
+# Transform Args
+OWNER=$(echo $OWNER_AND_REPOSITORY | cut -d'/' -f1)
+REPOSITORY=$(echo $OWNER_AND_REPOSITORY | cut -d'/' -f2)
 
 # Transparent Args
 echo "OWNER: $OWNER"
 echo "REPOSITORY: $REPOSITORY"
 echo "PR_NUMBER: $PR_NUMBER"
+
+# Validate Args
+## Verify OWNER exists on github
+if ! gh api "/users/$OWNER" &> /dev/null; then
+    echo "OWNER not found"
+    exit 1
+fi
+
+## Verify PR is a number
+if ! [[ $PR_NUMBER =~ ^[0-9]+$ ]]; then
+    echo "PR_NUMBER is not a number"
+    exit 1
+fi
 
 # Make URL
 PR_URL="https://github.com/$OWNER/$REPOSITORY/pull/$PR_NUMBER"
