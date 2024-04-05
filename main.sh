@@ -14,9 +14,9 @@ PR_NUMBER=$3
 PR_URL="https://github.com/$OWNER/$REPOSITORY/pull/$PR_NUMBER"
 echo "Analyzing PR: $PR_URL"
 
-## Get Changed Files
+## Checkout Repo and PR
 gh pr checkout $PR_URL
-cd $REPOSITORY
+ls
 
 gh pr diff --name-only $NUMBER > changed_files.txt
 echo 
