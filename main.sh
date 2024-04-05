@@ -10,6 +10,11 @@ OWNER=$1
 REPOSITORY=$2
 PR_NUMBER=$3
 
+# Transparent Args
+echo "OWNER: $OWNER"
+echo "REPOSITORY: $REPOSITORY"
+echo "PR_NUMBER: $PR_NUMBER"
+
 # Make URL
 PR_URL="https://github.com/$OWNER/$REPOSITORY/pull/$PR_NUMBER"
 echo "Analyzing PR: $PR_URL"
