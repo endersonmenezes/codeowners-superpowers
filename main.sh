@@ -50,6 +50,12 @@ echo
 echo "Changed Files:"
 cat changed_files.txt
 
+## If not changed files
+if [ ! -s changed_files.txt ]; then
+    echo "No files changed"
+    exit 0
+fi
+
 ## Add a slash at the beginning of the all lines
 sed -i 's/^/\//' changed_files.txt
 
