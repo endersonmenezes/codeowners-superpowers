@@ -109,6 +109,12 @@ done
 ## Remove duplicates
 NECESSARY_APPROVALS=($(echo "${NECESSARY_APPROVALS[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
 
+## If no necessary approvals
+if [ ${#NECESSARY_APPROVALS[@]} -eq 0 ]; then
+    echo "No necessary approvals"
+    exit 0
+fi
+
 ## Print the necessary approvals
 echo
 echo "We identified the following owners are necessary to approve the PR:"
