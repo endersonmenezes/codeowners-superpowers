@@ -7,10 +7,10 @@ branding:
   color: "gray-dark"
 
 inputs:
-  require_all_codeowners_at_line:
-    description: "Use that power to verify if all CODEOWNERs of that file approve the changes"
-    required: false
-    default: "false"
+  super_power:
+    description: "View the docs to see the superpowers available! (Default: require-all-codeowners)"
+    required: true
+    default: "require-all-codeowners"
   pr_number:
     description: "The PR number"
     required: true
@@ -40,6 +40,6 @@ runs:
       name: "Boost CODEOWNERs"
       id: boost-codeowners
       if: ${{ inputs.require_all_codeowners_at_line == 'true' }}
-      run: main.sh ${{ inputs.owner_and_repository }} ${{ inputs.pr_number }}
+      run: main.sh ${{ inputs.owner_and_repository }} ${{ inputs.pr_number }} ${{ inputs.super_power }}
       env:
         GITHUB_TOKEN: ${{ inputs.gh-token }}
