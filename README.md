@@ -28,5 +28,6 @@ Based on: [this discussion](https://github.com/isaacs/github/issues/1205)
 1. Create a GitHub App inside your organization or repository.
 2. That GitHub App needs to have the following permissions:
     - Read contents of repository.
+    - Read pull-requests of repository.
     - Read members of the organization.
 3. Use the [actions/create-github-app-token@v1](https://github.com/actions/create-github-app-token) before use the GATE with Superpowers.
