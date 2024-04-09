@@ -39,7 +39,6 @@ runs:
     - shell: bash
       name: "Boost CODEOWNERs"
       id: boost-codeowners
-      if: ${{ inputs.require_all_codeowners_at_line == 'true' }}
       run: main.sh ${{ inputs.owner_and_repository }} ${{ inputs.pr_number }} ${{ inputs.super_power }}
       env:
         GITHUB_TOKEN: ${{ inputs.gh-token }}
