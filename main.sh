@@ -8,6 +8,7 @@
 # Arguments
 OWNER_AND_REPOSITORY=$1
 PR_NUMBER=$2
+SUPERPOWER=$3
 
 # Transform Args
 OWNER=$(echo $OWNER_AND_REPOSITORY | cut -d'/' -f1)
@@ -19,9 +20,12 @@ echo "REPOSITORY: $REPOSITORY"
 echo "PR_NUMBER: $PR_NUMBER"
 
 # Validate Args
-## Verify OWNER exists on github
-if ! gh api "/users/$OWNER" &> /dev/null; then
-    echo "OWNER not found"
+## Verify power is available (SUPERPOWER can be require-all-codeowners)
+AVAILABLE_SUPERPOWERS=(
+    "require-all-codeowners"
+)
+if ! [[ " ${AVAILABLE_SUPERPOWERS[@]} " =~ " ${SUPERPOWER} " ]]; then
+    echo "SUPERPOWER is not available"
     exit 1
 fi
 
