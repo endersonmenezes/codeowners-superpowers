@@ -14,12 +14,12 @@ PR_NUMBER=$2
 SUPERPOWER=$3
 
 # Transform Args
-OWNER=$(echo $OWNER_AND_REPOSITORY | cut -d'/' -f1)
-REPOSITORY=$(echo $OWNER_AND_REPOSITORY | cut -d'/' -f2)
+GH_OWNER=$(echo $OWNER_AND_REPOSITORY | cut -d'/' -f1)
+GH_REPOSITORY=$(echo $OWNER_AND_REPOSITORY | cut -d'/' -f2)
 
 # Transparent Args
-echo "OWNER: $OWNER"
-echo "REPOSITORY: $REPOSITORY"
+echo "OWNER: $GH_OWNER"
+echo "REPOSITORY: $GH_REPOSITORY"
 echo "PR_NUMBER: $PR_NUMBER"
 
 # Validate GH is installed
@@ -53,7 +53,7 @@ if ! [[ $PR_NUMBER =~ ^[0-9]+$ ]]; then
 fi
 
 # Make URL
-PR_URL="https://github.com/$OWNER/$REPOSITORY/pull/$PR_NUMBER"
+PR_URL="https://github.com/$GH_OWNER/$GH_REPOSITORY/pull/$PR_NUMBER"
 echo "Analyzing PR: $PR_URL"
 
 # Download CODEOWNERs File
@@ -61,7 +61,7 @@ echo "Analyzing PR: $PR_URL"
 gh api \
   -H "Accept: application/vnd.github+json" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
-  /repos/$OWNER/$REPOSITORY/contents/.github/CODEOWNERS > pr.json
+  /repos/$GH_OWNER/$GH_REPOSITORY/contents/.github/CODEOWNERS > pr.json
 
 CODEOWNERS_FILE_PATH="./CODEOWNERS"
 
@@ -73,7 +73,7 @@ curl -s -H "Accept: application/vnd.github.v3.raw" $CODEOWNERS_DOWNLOAD_URL > $C
 
 ## Checkout Repo and PR
 echo "Trying to get diff files from PR"
-gh pr diff ${PR_NUMBER} --repo ${OWNER}/${REPOSITORY} --name-only > changed_files.txt
+gh pr diff ${PR_NUMBER} --repo ${GH_OWNER}/${GH_REPOSITORY} --name-only > changed_files.txt
 echo "Changed Files:"
 cat changed_files.txt
 
@@ -162,7 +162,9 @@ for OWNER in "${NECESSARY_APPROVALS[@]}"; do
     echo $OWNER
 done
 
-PR_APPROVED=$(gh pr view $PR_NUMBER --repo "${OWNER}/${REPOSITORY}" --json reviews | jq '.reviews[] | select(.state == "APPROVED") | .author.login')
+echo "Catch the PR approvals"
+gh pr view $PR_NUMBER --repo ${GH_OWNER}/${GH_REPOSITORY} --json reviews > pr_approvals.json
+PR_APPROVED=$(echo $PR_APPROVED | jq '.reviews[].author.login' | tr '\n' ' ')
 PR_APPROVED=$(echo $PR_APPROVED | tr -d '"')
 
 echo 
