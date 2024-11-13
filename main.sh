@@ -73,8 +73,7 @@ curl -s -H "Accept: application/vnd.github.v3.raw" $CODEOWNERS_DOWNLOAD_URL > $C
 
 ## Checkout Repo and PR
 echo "Trying to get diff files from PR"
-gh pr diff $NUMBER --repo $OWNER/$REPOSITORY --name-only > changed_files.txt
-echo 
+gh pr diff ${PR_NUMBER} --repo ${OWNER}/${REPOSITORY} --name-only > changed_files.txt
 echo "Changed Files:"
 cat changed_files.txt
 
@@ -98,40 +97,54 @@ if [ ! -z "$(tail -c 1 $CODEOWNERS_FILE_PATH)" ]; then
     echo "CODEOWNERS file must have a blank line at the end of the file"
     ## Add a blank line at the end of the file
     echo "" >> $CODEOWNERS_FILE_PATH
+    echo "" >> $CODEOWNERS_FILE_PATH
 fi
 
 ## Save set for protected dirs 
 declare -A SET_FILE_OR_DIR_AND_OWNER
 
 ## Read the CODEOWNERS file line by line
+echo "Reading CODEOWNERS file..."
 while IFS= read -r line; do
-
-    # Skip comments and empty lines and line with "*"
-    if [[ "$line" =~ ^\s*# ]] || [[ "$line" =~ ^\s*$ ]] || [[ "$line" =~ ^\s*\* ]]; then
+    # Skip empty lines
+    if [ -z "$line" ]; then
         continue
     fi
-    LINE_ARRAY=($line)
 
-    # Retrieve the directory or file and the owners (Can be * CAUTION)
-    DIR_OR_FILE=${LINE_ARRAY[0]}
+    # Skip Comment Line
+    REGEX_COMMENT="^#"
+    if [[ $line =~ $REGEX_COMMENT ]]; then
+        continue
+    fi
 
-    # Add dir or file on SET_FILE_OR_DIR_AND_OWNER
-    SET_FILE_OR_DIR_AND_OWNER["$DIR_OR_FILE"]=${LINE_ARRAY[@]:1}
-done < "$CODEOWNERS_FILE_PATH"
+    # Transform ${line} into a safe array
+    OLD_IFS=$IFS
+    IFS=' ' read -r -a LINE_ARRAY <<< "$line"
+    IFS=$OLD_IFS
+    
+    # If first element is a * continue
+    if [ "${LINE_ARRAY[0]}" == "*" ]; then
+        continue
+    fi
+
+    # Configure SET_FILE_OR_DIR_AND_OWNER
+    SET_FILE_OR_DIR_AND_OWNER["${LINE_ARRAY[0]}"]="${LINE_ARRAY[@]:1}"
+done < "${CODEOWNERS_FILE_PATH}"
+echo "End of reading CODEOWNERS file"
 
 ## Verify if the changed files are in the CODEOWNERs DIRs or files
 NECESSARY_APPROVALS=()
-for FILE in $(cat changed_files.txt); do
-    for DIR_OR_FILE in "${!SET_FILE_OR_DIR_AND_OWNER[@]}"; do
-        # Compare if the folder in the tree of protected folders
-        if [[ "$FILE" == *"$DIR_OR_FILE"* ]]; then
+while IFS= read -r FILE; do
+    for DIR_OR_FILE_OR_REGEX in "${!SET_FILE_OR_DIR_AND_OWNER[@]}"; do
+        if [[ "$FILE" == $DIR_OR_FILE_OR_REGEX ]]; then
             echo 
             echo "FILE: $FILE is in CODEOWNERS"
-            echo "OWNER: ${SET_FILE_OR_DIR_AND_OWNER[$DIR_OR_FILE]}"
-            NECESSARY_APPROVALS+=(${SET_FILE_OR_DIR_AND_OWNER[$DIR_OR_FILE]})
+            echo "OWNER: ${SET_FILE_OR_DIR_AND_OWNER[$DIR_OR_FILE_OR_REGEX]}"
+            echo "LINE: ${DIR_OR_FILE_OR_REGEX}"
+            NECESSARY_APPROVALS+=(${SET_FILE_OR_DIR_AND_OWNER[$DIR_OR_FILE_OR_REGEX]})
         fi
     done
-done
+done < changed_files.txt
 
 ## Remove duplicates
 NECESSARY_APPROVALS=($(echo "${NECESSARY_APPROVALS[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
@@ -149,7 +162,7 @@ for OWNER in "${NECESSARY_APPROVALS[@]}"; do
     echo $OWNER
 done
 
-PR_APPROVED=$(gh pr view $PR_NUMBER --json reviews | jq '.reviews[] | select(.state == "APPROVED") | .author.login')
+PR_APPROVED=$(gh pr view $PR_NUMBER --repo "${OWNER}/${REPOSITORY}" --json reviews | jq '.reviews[] | select(.state == "APPROVED") | .author.login')
 PR_APPROVED=$(echo $PR_APPROVED | tr -d '"')
 
 echo 
