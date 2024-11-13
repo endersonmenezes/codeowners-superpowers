@@ -73,7 +73,7 @@ curl -s -H "Accept: application/vnd.github.v3.raw" $CODEOWNERS_DOWNLOAD_URL > $C
 
 ## Checkout Repo and PR
 echo "Trying to get diff files from PR"
-gh pr diff --name-only $NUMBER --repo $OWNER/$REPOSITORY > changed_files.txt
+gh pr diff $NUMBER --repo $OWNER/$REPOSITORY --name-only > changed_files.txt
 echo 
 echo "Changed Files:"
 cat changed_files.txt
