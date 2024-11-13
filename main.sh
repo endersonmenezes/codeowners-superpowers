@@ -136,8 +136,13 @@ echo "End of reading CODEOWNERS file"
 NECESSARY_APPROVALS=()
 while IFS= read -r FILE; do
     for DIR_OR_FILE_OR_REGEX in "${!SET_FILE_OR_DIR_AND_OWNER[@]}"; do
-        echo "if [[ \"$FILE\" =~ $DIR_OR_FILE_OR_REGEX ]]; then"
         if [[ "$FILE" =~ $DIR_OR_FILE_OR_REGEX ]]; then
+            echo 
+            echo "FILE: $FILE is in CODEOWNERS"
+            echo "OWNER: ${SET_FILE_OR_DIR_AND_OWNER[$DIR_OR_FILE_OR_REGEX]}"
+            echo "LINE: ${DIR_OR_FILE_OR_REGEX}"
+            NECESSARY_APPROVALS+=(${SET_FILE_OR_DIR_AND_OWNER[$DIR_OR_FILE_OR_REGEX]})
+        elif [[ "$FILE" == $DIR_OR_FILE_OR_REGEX ]]; then
             echo 
             echo "FILE: $FILE is in CODEOWNERS"
             echo "OWNER: ${SET_FILE_OR_DIR_AND_OWNER[$DIR_OR_FILE_OR_REGEX]}"
