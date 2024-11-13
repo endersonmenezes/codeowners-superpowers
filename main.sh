@@ -19,6 +19,20 @@ echo "OWNER: $OWNER"
 echo "REPOSITORY: $REPOSITORY"
 echo "PR_NUMBER: $PR_NUMBER"
 
+# Validate GH is installed
+if ! command -v gh &> /dev/null
+then
+    echo "gh could not be found"
+    exit 1
+fi
+
+# Validate jq is installed
+if ! command -v jq &> /dev/null
+then
+    echo "jq could not be found"
+    exit 1
+fi
+
 # Validate Args
 ## Verify power is available (SUPERPOWER can be require-all-codeowners)
 AVAILABLE_SUPERPOWERS=(
@@ -39,13 +53,26 @@ fi
 PR_URL="https://github.com/$OWNER/$REPOSITORY/pull/$PR_NUMBER"
 echo "Analyzing PR: $PR_URL"
 
+# Download CODEOWNERs File
+
+gh api \
+  -H "Accept: application/vnd.github+json" \
+  -H "X-GitHub-Api-Version: 2022-11-28" \
+  /repos/$OWNER/$REPOSITORY/contents/.github/CODEOWNERS > pr.json
+
+CODEOWNERS_FILE_PATH="./CODEOWNERS"
+
+# Download CODEOWNERS File
+# download_url
+CODEOWNERS_DOWNLOAD_URL=$(cat pr.json | jq '.download_url' | tr -d '"')
+echo "Downloading CODEOWNERS file..."
+curl -s -H "Accept: application/vnd.github.v3.raw" $CODEOWNERS_DOWNLOAD_URL > $CODEOWNERS_FILE_PATH
+
 ## Checkout Repo and PR
 echo "Trying to clone $OWNER/$REPOSITORY"
 gh repo clone "$OWNER/$REPOSITORY"
-cd $REPOSITORY
-gh pr checkout $PR_URL
 
-gh pr diff --name-only $NUMBER > changed_files.txt
+gh pr diff --name-only $NUMBER --repo $OWNER/$REPOSITORY > changed_files.txt
 echo 
 echo "Changed Files:"
 cat changed_files.txt
@@ -60,17 +87,16 @@ fi
 sed -i 's/^/\//' changed_files.txt
 
 ## Verify that the CODEOWNERS file exists
-CODEOWNERS_FILE=".github/CODEOWNERS"
-if [ ! -f "$CODEOWNERS_FILE" ]; then
+if [ ! -f "$CODEOWNERS_FILE_PATH" ]; then
     echo "CODEOWNERS file not found"
     exit 1
 fi
 
 ## Verify that CODEOWNERS file have blank end of file
-if [ ! -z "$(tail -c 1 $CODEOWNERS_FILE)" ]; then
+if [ ! -z "$(tail -c 1 $CODEOWNERS_FILE_PATH)" ]; then
     echo "CODEOWNERS file must have a blank line at the end of the file"
     ## Add a blank line at the end of the file
-    echo "" >> $CODEOWNERS_FILE
+    echo "" >> $CODEOWNERS_FILE_PATH
 fi
 
 ## Save set for protected dirs 
@@ -90,7 +116,7 @@ while IFS= read -r line; do
 
     # Add dir or file on SET_FILE_OR_DIR_AND_OWNER
     SET_FILE_OR_DIR_AND_OWNER["$DIR_OR_FILE"]=${LINE_ARRAY[@]:1}
-done < "$CODEOWNERS_FILE"
+done < "$CODEOWNERS_FILE_PATH"
 
 ## Verify if the changed files are in the CODEOWNERs DIRs or files
 NECESSARY_APPROVALS=()
