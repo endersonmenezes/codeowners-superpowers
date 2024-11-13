@@ -72,9 +72,7 @@ echo "Downloading CODEOWNERS file..."
 curl -s -H "Accept: application/vnd.github.v3.raw" $CODEOWNERS_DOWNLOAD_URL > $CODEOWNERS_FILE_PATH
 
 ## Checkout Repo and PR
-echo "Trying to clone $OWNER/$REPOSITORY"
-gh repo clone "$OWNER/$REPOSITORY"
-
+echo "Trying to get diff files from PR"
 gh pr diff --name-only $NUMBER --repo $OWNER/$REPOSITORY > changed_files.txt
 echo 
 echo "Changed Files:"
