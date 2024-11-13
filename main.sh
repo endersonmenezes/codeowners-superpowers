@@ -5,6 +5,9 @@
 # Created: 2024-05-04
 ##
 
+# Set strict mode
+set -e
+
 # Arguments
 OWNER_AND_REPOSITORY=$1
 PR_NUMBER=$2
