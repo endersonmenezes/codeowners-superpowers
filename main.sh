@@ -170,6 +170,7 @@ done
 
 echo "Catch the PR approvals"
 gh pr view $PR_NUMBER --repo ${GH_OWNER}/${GH_REPOSITORY} --json reviews > pr_approvals.json
+PR_APPROVED=$(cat pr_approvals.json)
 PR_APPROVED=$(echo $PR_APPROVED | jq '.reviews[].author.login' | tr '\n' ' ')
 PR_APPROVED=$(echo $PR_APPROVED | tr -d '"')
 
