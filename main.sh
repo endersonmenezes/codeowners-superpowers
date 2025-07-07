@@ -173,6 +173,9 @@ gh pr view $PR_NUMBER --repo ${GH_OWNER}/${GH_REPOSITORY} --json reviews > pr_ap
 PR_APPROVED=$(cat pr_approvals.json)
 PR_APPROVED=$(echo $PR_APPROVED | jq '.reviews[].author.login' | tr '\n' ' ')
 PR_APPROVED=$(echo $PR_APPROVED | tr -d '"')
+## Remove duplicates
+PR_APPROVED=$(echo $PR_APPROVED | tr ' ' '\n' | sort -u | tr '\n' ' ')
+echo "The following users approved the PR: $PR_APPROVED"
 
 echo 
 for NECESSARY_OWNER in "${NECESSARY_APPROVALS[@]}"; do
@@ -189,6 +192,7 @@ for NECESSARY_OWNER in "${NECESSARY_APPROVALS[@]}"; do
     MEMBER_LIST=$(gh api \
         -H "Accept: application/vnd.github+json" \
         -H "X-GitHub-Api-Version: 2022-11-28" \
+        --paginate \
         $API_CALL | jq '.[].login' | tr -d '"')
     echo $MEMBER_LIST > member_list_$OWNER_TEAM.txt
 done
