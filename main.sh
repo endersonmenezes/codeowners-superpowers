@@ -65,9 +65,17 @@ gh api \
 
 CODEOWNERS_FILE_PATH="./CODEOWNERS"
 
-# Download CODEOWNERS File
-# download_url
+# Check if CODEOWNERS file exists in the repository
 CODEOWNERS_DOWNLOAD_URL=$(cat pr.json | jq '.download_url' | tr -d '"')
+
+# If CODEOWNERS file doesn't exist, handle gracefully
+if [ "$CODEOWNERS_DOWNLOAD_URL" == "null" ] || [ -z "$CODEOWNERS_DOWNLOAD_URL" ]; then
+    echo "No CODEOWNERS file found in the main branch"
+    echo "No code owners to validate - validation passes"
+    exit 0
+fi
+
+# Download CODEOWNERS File
 echo "Downloading CODEOWNERS file..."
 curl -s -H "Accept: application/vnd.github.v3.raw" $CODEOWNERS_DOWNLOAD_URL > $CODEOWNERS_FILE_PATH
 
@@ -85,12 +93,6 @@ fi
 
 ## Add a slash at the beginning of the all lines
 sed -i 's/^/\//' changed_files.txt
-
-## Verify that the CODEOWNERS file exists
-if [ ! -f "$CODEOWNERS_FILE_PATH" ]; then
-    echo "CODEOWNERS file not found"
-    exit 1
-fi
 
 ## Verify that CODEOWNERS file have blank end of file
 if [ ! -z "$(tail -c 1 $CODEOWNERS_FILE_PATH)" ]; then
