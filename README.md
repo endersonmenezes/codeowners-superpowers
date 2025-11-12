@@ -1,6 +1,13 @@
 # codeowners-superpowers
 A GitHub Action that powers the CODEOWNERS.
 
+> Note: GitHub's official "Required review by specific teams" (Rulesets) feature is now available: https://github.blog/changelog/2025-11-03-required-review-by-specific-teams-now-available-in-rulesets/.
+
+> We recommend using the native GitHub feature when possible. This Action will be kept in a minimal form for compatibility and special cases, but the official solution should be preferred for new integrations.
+
+
+
+
 ## Example
 
 ```yaml
