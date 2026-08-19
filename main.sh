@@ -56,13 +56,34 @@ fi
 PR_URL="https://github.com/$GH_OWNER/$GH_REPOSITORY/pull/$PR_NUMBER"
 echo "Analyzing PR: $PR_URL"
 
-# Download CODEOWNERs File
+# Find target branch so we know where to get the CODEOWNERS file from
+TARGET_BRANCH=$(gh pr view $PR_NUMBER --repo $GH_OWNER/$GH_REPOSITORY --json baseRefName --jq .baseRefName)
+echo "Target Branch: $TARGET_BRANCH"
 
-gh api \
-  -H "Accept: application/vnd.github+json" \
-  -H "X-GitHub-Api-Version: 2022-11-28" \
-  /repos/$GH_OWNER/$GH_REPOSITORY/contents/.github/CODEOWNERS > pr.json
+# Download CODEOWNERs File. Honor priority order from the github docs (.github/ -> root -> docs/)
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners#codeowners-file-location
+CODEOWNERS_POSSIBLE_FILE_PATHS=(".github/CODEOWNERS" "CODEOWNERS" "docs/CODEOWNERS")
+CODEOWNERS_REMOTE_FILE_PATH=""
 
+for CODEOWNERS_FILE_PATH_CANDIDATE in "${CODEOWNERS_POSSIBLE_FILE_PATHS[@]}"; do
+    if gh api \
+        -H "Accept: application/vnd.github+json" \
+        -H "X-GitHub-Api-Version: 2022-11-28" \
+        "/repos/$GH_OWNER/$GH_REPOSITORY/contents/$CODEOWNERS_FILE_PATH_CANDIDATE?ref=$TARGET_BRANCH" \
+        > pr.json 2>/dev/null; then
+            CODEOWNERS_REMOTE_FILE_PATH=$CODEOWNERS_FILE_PATH_CANDIDATE
+            break
+    fi
+done
+
+if [[ -z "$CODEOWNERS_REMOTE_FILE_PATH" ]]; then
+    echo "No CODEOWNERS file found in any known path (${CODEOWNERS_POSSIBLE_FILE_PATHS[*]})."
+    exit 1
+fi
+
+echo "CODEOWNERS_REMOTE_FILE_PATH: $CODEOWNERS_REMOTE_FILE_PATH"
+
+# Local path where the CODEOWNERS file will be downloaded
 CODEOWNERS_FILE_PATH="./CODEOWNERS"
 
 # Download CODEOWNERS File
